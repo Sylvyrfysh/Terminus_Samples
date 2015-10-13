@@ -1,0 +1,11 @@
+#version 330
+
+vec4 outColor;
+
+uniform sampler2D tex;
+
+smooth in vec4 vertPos;
+
+void main(){
+	outColor=vec4(1);
+}

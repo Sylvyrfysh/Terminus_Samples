@@ -1,0 +1,78 @@
+#version 330
+out vec4 outputColor;
+
+uniform vec4 color;
+
+uniform mat4 view;
+uniform mat4 projection;
+uniform mat4 model;
+
+uniform vec3 u_lightAmbientIntensitys; // = vec3(0.6, 0.3, 0);
+uniform vec3 u_lightDiffuseIntensitys; // = vec3(1, 0.5, 0);
+uniform vec3 u_lightSpecularIntensitys; // = vec3(0, 1, 0);
+
+// parameters of the material and possible values
+uniform vec3 u_matAmbientReflectances; // = vec3(1, 1, 1);
+uniform vec3 u_matDiffuseReflectances; // = vec3(1, 1, 1);
+uniform vec3 u_matSpecularReflectances; // = vec3(1, 1, 1);
+uniform float u_matShininess;
+
+uniform sampler2D u_diffuseTexture;
+
+uniform vec3 Ks;
+uniform vec3 Ka;
+uniform vec3 Kd;
+
+in vec3	o_normal;
+in vec3	o_toLight;
+in vec3	o_toCamera;
+in vec2	o_texcoords;
+
+vec3 ambientLighting()
+{
+   return Ka * u_lightAmbientIntensitys;
+}
+
+// returns intensity of diffuse reflection
+vec3 diffuseLighting(in vec3 N, in vec3 L)
+{
+   // calculation as for Lambertian reflection
+   float diffuseTerm = clamp(dot(N, L), 0, 1) ;
+   return Kd * u_lightDiffuseIntensitys * diffuseTerm;
+}
+
+// returns intensity of specular reflection
+vec3 specularLighting(in vec3 N, in vec3 L, in vec3 V)
+{
+   float specularTerm = 0;
+
+   // calculate specular reflection only if
+   // the surface is oriented to the light source
+   if(dot(N, L) > 0)
+   {
+      // half vector
+      vec3 H = normalize(L + V);
+      specularTerm = pow(dot(N, H), u_matShininess);
+   }
+   return Ks * u_lightSpecularIntensitys * specularTerm;
+}
+
+void main(void)
+{
+   // normalize vectors after interpolation
+   vec3 L = normalize(o_toLight);
+  vec3 V = normalize(o_toCamera);
+  vec3 N = normalize(o_normal);
+
+   // get Blinn-Phong reflectance components
+   vec3 Iamb = ambientLighting();
+   vec3 Idif = diffuseLighting(N, L);
+   vec3 Ispe = specularLighting(N, L, V);
+
+   // diffuse color of the object from texture
+   //vec3 diffuseColor = texture(u_diffuseTexture, o_texcoords).rgb;
+
+   // combination of all components and diffuse color of the object
+   outputColor.xyz = (Iamb + Idif + Ispe);
+   outputColor.a = 1;
+}

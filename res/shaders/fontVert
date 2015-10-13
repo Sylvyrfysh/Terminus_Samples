@@ -1,0 +1,14 @@
+#version 330
+
+in vec4 position;
+
+in vec2 charPos;
+
+uniform sampler2D tex;
+
+smooth out vec4 vertPos;
+
+void main(){
+	vertPos=position;
+	gl_Position=position;
+}
